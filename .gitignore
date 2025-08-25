@@ -1,10 +1,30 @@
+# Python related
 __pycache__/
-*.pyc
-env/
-venv/
-.idea/
-.vscode/
-.DS_Store
-*.egg-info
-dist/
+*.py[cod]
+*.so
+
+# Distribution / packaging
 build/
+dist/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# PyCharm / JetBrains
+.idea/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Generated files
+weather_da_an.json
