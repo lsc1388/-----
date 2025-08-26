@@ -162,185 +162,127 @@ class Ball:
         self.launched = False
 
 
-######################定義函式區######################
-
-######################初始化設定######################
-import os
-
-# 在建立視窗前嘗試將視窗置中（SDL 支援）
-# NOTE: 必要時可以用系統視窗管理器再移動視窗，這裡使用常見的環境變數方法
-os.environ.setdefault("SDL_VIDEO_CENTERED", "1")
-
-pygame.init()  # 啟動pygame
-clock = pygame.time.Clock()  # 建立時鐘物件
-width = 800  # 設定視窗寬度
-height = 600  # 設定視窗高度
-
-######################載入圖片######################
-
-######################遊戲視窗設定######################
-screen = pygame.display.set_mode((width, height))  # 建立視窗
-pygame.display.set_caption("敲磚塊遊戲")  # 設定視窗標題
-
-######################磚塊######################
-# 建立 10 列 x 5 行 的磚塊牆參數（會用在初始化函式中）
-brick_cols = 10  # 列數 (x 方向)
-brick_rows = 5  # 行數 (y 方向)
-brick_width = 60
-brick_height = 20
-brick_padding = 5  # 磚塊間隔
-brick_offset_y = 60  # 上方邊距
-
-
-def create_bricks():
-    """建立並回傳磚塊清單"""
-    total_bricks_width = brick_cols * brick_width + (brick_cols - 1) * brick_padding
-    brick_offset_x = (width - total_bricks_width) // 2
-    bricks = []
-    for row in range(brick_rows):
-        for col in range(brick_cols):
-            x = brick_offset_x + col * (brick_width + brick_padding)
-            y = brick_offset_y + row * (brick_height + brick_padding)
-            color = (
-                200 - row * 20 if 200 - row * 20 >= 0 else 0,
-                50 + row * 30 if 50 + row * 30 <= 255 else 255,
-                50 + col * 10 if 50 + col * 10 <= 255 else 255,
-            )
-            bricks.append(Brick(brick_width, brick_height, x, y, color))
-    return bricks
-
-
-######################顯示文字設定######################
-
-######################底板設定######################
-
-# 使用現有的 Brick 類別來代表玩家的底板 (paddle)
-# 假設底板寬度比單顆磚塊寬，並且 y 座標固定
-paddle_width = brick_width * 2  # 底板寬度 (可以調整為比單顆磚塊寬)
-paddle_height = 16
-# 將底板放在視窗下方，有一點上方間距
-paddle_y = height - 60
-# 初始 x 座標置中
-paddle_x = (width - paddle_width) // 2
-paddle_color = (200, 200, 200)
-
-
-def init_game():
-    """初始化或重置遊戲物件，回傳 (bricks, paddle, balls, ball_speed)"""
-    paddle = Brick(paddle_width, paddle_height, paddle_x, paddle_y, paddle_color)
-    # 建立球清單 (初始5顆球)
-    ball_radius = 8
-    ball_color = (255, 255, 0)  # 黃色球
-    balls = []
-    for i in range(5):  # 初始5顆球
-        ball = Ball(
-            ball_radius,
-            ball_color,
-            paddle.x + paddle.width / 2,
-            paddle.y - ball_radius - 1,
-            launched=False,
-        )
-        balls.append(ball)
-    ball_speed = 10  # 使用者要求的速度
-    bricks = create_bricks()
-    # 初始化分數
-    score = 0
-    # 球總數統計
-    total_balls = 5
-    # 計時器變數
-    last_add_time = pygame.time.get_ticks()
-    # 發射相關變數
-    balls_to_launch = 0
-    launch_timer = 0
-    launch_delay = 300  # 每顆球間隔300毫秒發射
-    return bricks, paddle, balls, ball_speed, score, total_balls, last_add_time, balls_to_launch, launch_timer, launch_delay
-
-
-# 初始化遊戲物件
-bricks, paddle, balls, ball_speed, score, total_balls, last_add_time, balls_to_launch, launch_timer, launch_delay = init_game()
-
-# 建立顯示用字型
-default_font = pygame.font.SysFont(None, 28)
-
-
-######################球設定######################
-
-######################遊戲結束設定######################
-
 ######################主程式######################
-while True:
-    clock.tick(60)  # 每秒鐘最多執行60次迴圈
+if __name__ == "__main__":
+    while True:
+        clock.tick(60)  # 每秒鐘最多執行60次迴圈
 
-    # 偵測事件
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # 如果按下[X]就退出
-            sys.exit()  # 離開遊戲
-        # 發射球：空白鍵或滑鼠左鍵
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and balls_to_launch == 0:
-                # 準備發射5顆球
-                balls_to_launch = min(5, len([b for b in balls if not b.launched]))
-                launch_timer = pygame.time.get_ticks()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and balls_to_launch == 0:
-                # 準備發射5顆球
-                balls_to_launch = min(5, len([b for b in balls if not b.launched]))
-                launch_timer = pygame.time.get_ticks()
+        # 偵測事件
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # 如果按下[X]就退出
+                sys.exit()  # 離開遊戲
+            # 發射球：空白鍵或滑鼠左鍵
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and balls_to_launch == 0:
+                    # 準備發射5顆球
+                    balls_to_launch = min(5, len([b for b in balls if not b.launched]))
+                    launch_timer = pygame.time.get_ticks()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1 and balls_to_launch == 0:
+                    # 準備發射5顆球
+                    balls_to_launch = min(5, len([b for b in balls if not b.launched]))
+                    launch_timer = pygame.time.get_ticks()
 
-    # 填充背景顏色
-    screen.fill((0, 0, 0))  # 黑色背景
-    # 繪製所有磚塊（尚未實作碰撞偵測，僅顯示）
-    for b in bricks:
-        b.draw(screen)
+        # 填充背景顏色
+        screen.fill((0, 0, 0))  # 黑色背景
+        # 繪製所有磚塊
+        for b in bricks:
+            b.draw(screen)
 
-    # 繪製分數於左上角
-    score_surface = default_font.render(f"Score: {score}", True, (255, 255, 255))
-    screen.blit(score_surface, (10, 10))
+        # 每秒增加5顆球
+        current_time = pygame.time.get_ticks()
+        if current_time - last_add_time >= 1000:  # 每1000毫秒（1秒）
+            for i in range(5):
+                ball_radius = 8
+                ball_color = (255, 255, 0)
+                new_ball = Ball(
+                    ball_radius,
+                    ball_color,
+                    paddle.x + paddle.width / 2,
+                    paddle.y - ball_radius - 1,
+                    launched=False,
+                )
+                balls.append(new_ball)
+            total_balls += 5
+            last_add_time = current_time
 
-    # 更新並繪製底板 (paddle)
-    # 支援鍵盤左右控制（左右方向鍵或 A/D），若有按鍵則以鍵盤為主；否則以滑鼠為備援
-    # 每次迴圈檢查目前按鍵狀態
-    keys = pygame.key.get_pressed()
-    paddle_speed = 8  # 每幀移動像素數，可調整以改變底板速度
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        paddle.x -= paddle_speed
-    elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        paddle.x += paddle_speed
-    else:
-        # 使用滑鼠（以滑鼠 x 為中心）作為備援控制
-        mouse_x, _ = pygame.mouse.get_pos()
-        paddle.x = mouse_x - paddle.width // 2
+        # 處理連續發射球
+        if balls_to_launch > 0:
+            if current_time - launch_timer >= launch_delay:
+                # 找到第一個未發射的球
+                for ball in balls:
+                    if not ball.launched:
+                        ball.launched = True
+                        # 添加一些隨機性讓球不會完全重疊
+                        import random
 
-    # 邊界限制，確保底板不會移出視窗
-    if paddle.x < 0:
-        paddle.x = 0
-    if paddle.x + paddle.width > width:
-        paddle.x = width - paddle.width
+                        ball.set_velocity(
+                            ball_speed * 0.5 + random.uniform(-1, 1), -ball_speed
+                        )
+                        balls_to_launch -= 1
+                        launch_timer = current_time
+                        break
 
-    # 繪製底板
-    paddle.draw(screen)
+        # 繪製分數和球數於左上角
+        score_surface = default_font.render(f"Score: {score}", True, (255, 255, 255))
+        screen.blit(score_surface, (10, 10))
+        ball_count_surface = default_font.render(
+            f"Balls: {len(balls)}", True, (255, 255, 255)
+        )
+        screen.blit(ball_count_surface, (10, 40))
 
-    # 處理球的邏輯
-    if not ball.launched:
-        # 未發射時球跟隨底板
-        ball.move_with_paddle(paddle)
-    else:
-        ball.update()
-        # 檢查與視窗牆壁碰撞
-        ball.check_wall_collision(width, height)
-        # 檢查與磚塊碰撞，若有命中則加分
-        if ball.check_brick_collision(bricks):
-            score += 100
-        # 檢查與底板碰撞
-        ball.check_paddle_collision(paddle)
+        # 更新並繪製底板 (paddle)
+        keys = pygame.key.get_pressed()
+        paddle_speed = 8  # 每幀移動像素數，可調整以改變底板速度
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            paddle.x -= paddle_speed
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            paddle.x += paddle_speed
+        else:
+            # 使用滑鼠（以滑鼠 x 為中心）作為備援控制
+            mouse_x, _ = pygame.mouse.get_pos()
+            paddle.x = mouse_x - paddle.width // 2
 
-        # 檢查球是否已離開視窗 (整個球離開視窗範圍)
-        if (
-            ball.x + ball.radius < 0
-            or ball.x - ball.radius > width
-            or ball.y - ball.radius > height
-            or ball.y + ball.radius < 0
-        ):
+        # 邊界限制，確保底板不會移出視窗
+        if paddle.x < 0:
+            paddle.x = 0
+        if paddle.x + paddle.width > width:
+            paddle.x = width - paddle.width
+
+        # 繪製底板
+        paddle.draw(screen)
+
+        # 處理所有球的邏輯
+        balls_to_remove = []
+        for i, ball in enumerate(balls):
+            if not ball.launched:
+                # 未發射時球跟隨底板
+                ball.move_with_paddle(paddle)
+            else:
+                ball.update()
+                # 檢查與視窗牆壁碰撞
+                ball.check_wall_collision(width, height)
+                # 檢查與磚塊碰撞，若有命中則加分
+                if ball.check_brick_collision(bricks):
+                    score += 100
+                # 檢查與底板碰撞
+                ball.check_paddle_collision(paddle)
+
+                # 檢查球是否已離開視窗
+                if (
+                    ball.x + ball.radius < 0
+                    or ball.x - ball.radius > width
+                    or ball.y - ball.radius > height
+                    or ball.y + ball.radius < 0
+                ):
+                    balls_to_remove.append(i)
+
+        # 移除離開視窗的球
+        for i in reversed(balls_to_remove):
+            balls.pop(i)
+
+        # 檢查是否所有球都已離開且沒有未發射的球
+        if len(balls) == 0:
             # 顯示遊戲結束畫面並等待玩家選擇
             def show_end_screen(message, final_score):
                 font = pygame.font.SysFont(None, 48)
@@ -390,62 +332,41 @@ while True:
 
             choice = show_end_screen("Game Over", score)
             if choice == "restart":
-                bricks, paddle, ball, ball_speed, score = init_game()
+                (
+                    bricks,
+                    paddle,
+                    balls,
+                    ball_speed,
+                    score,
+                    total_balls,
+                    last_add_time,
+                    balls_to_launch,
+                    launch_timer,
+                    launch_delay,
+                ) = init_game()
                 continue
 
         # 檢查是否已經清除所有磚塊 -> 贏
         if all(b.hit for b in bricks):
-
-            def show_end_screen(message, final_score):
-                font = pygame.font.SysFont(None, 48)
-                small = pygame.font.SysFont(None, 28)
-                while True:
-                    for ev in pygame.event.get():
-                        if ev.type == pygame.QUIT:
-                            sys.exit()
-                        if ev.type == pygame.KEYDOWN:
-                            if ev.key == pygame.K_r:
-                                return "restart"
-                            if ev.key == pygame.K_q:
-                                sys.exit()
-                        if ev.type == pygame.MOUSEBUTTONDOWN:
-                            if ev.button == 1:
-                                return "restart"
-                            if ev.button == 3:
-                                sys.exit()
-
-                    overlay = pygame.Surface((width, height))
-                    overlay.set_alpha(180)
-                    overlay.fill((0, 0, 0))
-                    screen.blit(overlay, (0, 0))
-                    text = font.render(message, True, (255, 255, 255))
-                    rect = text.get_rect(center=(width // 2, height // 2 - 60))
-                    screen.blit(text, rect)
-                    score_text = small.render(
-                        f"Score: {final_score}", True, (255, 255, 255)
-                    )
-                    score_rect = score_text.get_rect(
-                        center=(width // 2, height // 2 - 10)
-                    )
-                    screen.blit(score_text, score_rect)
-                    tip = small.render(
-                        "Press R to restart, Q to quit (or click left/right)",
-                        True,
-                        (200, 200, 200),
-                    )
-                    tipr = tip.get_rect(center=(width // 2, height // 2 + 30))
-                    screen.blit(tip, tipr)
-                    pygame.display.update()
-
-            choice = show_end_screen("you win", score)
+            choice = show_end_screen("You Win!", score)
             if choice == "restart":
-                bricks, paddle, ball, ball_speed, score = init_game()
+                (
+                    bricks,
+                    paddle,
+                    balls,
+                    ball_speed,
+                    score,
+                    total_balls,
+                    last_add_time,
+                    balls_to_launch,
+                    launch_timer,
+                    launch_delay,
+                ) = init_game()
                 continue
 
-    # 繪製球
-    ball.draw(screen)
+        # 繪製所有球
+        for ball in balls:
+            ball.draw(screen)
 
-    # TODO: 在此可以加入遊戲邏輯更新 (例如: 球的位置更新、與磚塊/底板的碰撞偵測、分數計算等)
-
-    # 更新視窗
-    pygame.display.update()
+        # 更新視窗
+        pygame.display.update()
