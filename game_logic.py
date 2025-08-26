@@ -1,27 +1,28 @@
-"""
-遊戲邏輯模組
-包含主要的遊戲循環和邏輯處理
+"""遊戲邏輯模組.
+
+包含主要的遊戲循環和邏輯處理。
 """
 
-import pygame
-import sys
+import os
 import random
-from game_objects import Ball, Explosion
+import sys
+
+import pygame
+
 from config import *
+from game_objects import Ball, Explosion
 from utils import *
 
 
 class BrickBreakerGame:
-    """敲磚塊遊戲主要類別"""
+    """敲磚塊遊戲主要類別."""
 
     def __init__(self):
-        """初始化遊戲"""
+        """初始化遊戲."""
         # 初始化 pygame
         pygame.init()
 
         # 在建立視窗前嘗試將視窗置中
-        import os
-
         os.environ.setdefault("SDL_VIDEO_CENTERED", SDL_VIDEO_CENTERED)
 
         # 建立遊戲視窗和時鐘
@@ -36,7 +37,7 @@ class BrickBreakerGame:
         self.reset_game()
 
     def reset_game(self):
-        """重置遊戲狀態"""
+        """重置遊戲狀態."""
         (
             self.bricks,
             self.paddle,
@@ -52,7 +53,7 @@ class BrickBreakerGame:
         self.explosions = []
 
     def handle_events(self):
-        """處理遊戲事件"""
+        """處理遊戲事件."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -67,13 +68,13 @@ class BrickBreakerGame:
                     self._prepare_launch()
 
     def _prepare_launch(self):
-        """準備發射球"""
+        """準備發射球."""
         unlaunched_balls = [b for b in self.balls if not b.launched]
         self.balls_to_launch = min(5, len(unlaunched_balls))
         self.launch_timer = pygame.time.get_ticks()
 
     def update_game_logic(self):
-        """更新遊戲邏輯"""
+        """更新遊戲邏輯."""
         current_time = pygame.time.get_ticks()
 
         # 每秒增加5顆球
@@ -107,18 +108,24 @@ class BrickBreakerGame:
         self._update_explosions()
 
     def _launch_next_ball(self, current_time):
-        """發射下一顆球"""
+        """發射下一顆球.
+        
+        Args:
+            current_time (int): 目前時間戳記
+        """
         for ball in self.balls:
             if not ball.launched:
                 ball.launched = True
                 # 添加一些隨機性讓球不會完全重疊
-                ball.set_velocity(BALL_SPEED * 0.5 + random.uniform(-1, 1), -BALL_SPEED)
+                ball.set_velocity(
+                    BALL_SPEED * 0.5 + random.uniform(-1, 1), -BALL_SPEED
+                )
                 self.balls_to_launch -= 1
                 self.launch_timer = current_time
                 break
 
     def _update_balls(self):
-        """更新所有球的狀態"""
+        """更新所有球的狀態."""
         balls_to_remove = []
 
         for i, ball in enumerate(self.balls):
@@ -129,15 +136,18 @@ class BrickBreakerGame:
                 ball.update()
                 # 檢查與視窗牆壁碰撞
                 ball.check_wall_collision(WINDOW_WIDTH, WINDOW_HEIGHT)
-                # 檢查與磚塊碰撞，若有命中則加分並創建爆炸效果
-                hit_brick = ball.check_brick_collision(self.bricks)
-                if hit_brick:
-                    self.score += SCORE_PER_BRICK
-                    # 創建爆炸效果在磚塊中心位置
-                    explosion_x = hit_brick.x + hit_brick.width / 2
-                    explosion_y = hit_brick.y + hit_brick.height / 2
-                    explosion = Explosion(explosion_x, explosion_y, hit_brick.color)
-                    self.explosions.append(explosion)
+                # 檢查與磚塊碰撞，現在可能一次命中多個磚塊
+                hit_bricks = ball.check_brick_collision(self.bricks)
+                if hit_bricks:
+                    for hit_brick in hit_bricks:
+                        self.score += SCORE_PER_BRICK
+                        # 創建爆炸效果在磚塊中心位置
+                        explosion_x = hit_brick.x + hit_brick.width / 2
+                        explosion_y = hit_brick.y + hit_brick.height / 2
+                        explosion = Explosion(
+                            explosion_x, explosion_y, hit_brick.color
+                        )
+                        self.explosions.append(explosion)
                 # 檢查與底板碰撞
                 ball.check_paddle_collision(self.paddle)
 
@@ -150,7 +160,7 @@ class BrickBreakerGame:
             self.balls.pop(i)
 
     def _update_explosions(self):
-        """更新爆炸效果"""
+        """更新爆炸效果."""
         explosions_to_remove = []
 
         for i, explosion in enumerate(self.explosions):
@@ -163,7 +173,14 @@ class BrickBreakerGame:
             self.explosions.pop(i)
 
     def _is_ball_out_of_bounds(self, ball):
-        """檢查球是否離開視窗範圍"""
+        """檢查球是否離開視窗範圍.
+        
+        Args:
+            ball: 球物件
+            
+        Returns:
+            bool: 球是否離開視窗範圍
+        """
         return (
             ball.x + ball.radius < 0
             or ball.x - ball.radius > WINDOW_WIDTH
@@ -172,7 +189,7 @@ class BrickBreakerGame:
         )
 
     def check_game_state(self):
-        """檢查遊戲狀態（勝利或失敗）"""
+        """檢查遊戲狀態（勝利或失敗）."""
         # 檢查是否所有球都已離開且沒有未發射的球
         if len(self.balls) == 0:
             choice = show_end_screen(self.screen, "Game Over", self.score)
@@ -182,7 +199,7 @@ class BrickBreakerGame:
                 sys.exit()
 
         # 檢查是否已經清除所有磚塊 -> 贏
-        if all(b.hit for b in self.bricks):
+        if all(brick.hit for brick in self.bricks):
             choice = show_end_screen(self.screen, "You Win!", self.score)
             if choice == "restart":
                 self.reset_game()
@@ -190,7 +207,7 @@ class BrickBreakerGame:
                 sys.exit()
 
     def render(self):
-        """渲染遊戲畫面"""
+        """渲染遊戲畫面."""
         # 填充背景顏色
         self.screen.fill(BLACK)
 
@@ -210,7 +227,9 @@ class BrickBreakerGame:
             explosion.draw(self.screen)
 
         # 繪製分數和球數於左上角
-        score_surface = self.default_font.render(f"Score: {self.score}", True, WHITE)
+        score_surface = self.default_font.render(
+            f"Score: {self.score}", True, WHITE
+        )
         self.screen.blit(score_surface, (10, 10))
 
         ball_count_surface = self.default_font.render(
@@ -222,7 +241,7 @@ class BrickBreakerGame:
         pygame.display.update()
 
     def run(self):
-        """運行主遊戲循環"""
+        """運行主遊戲循環."""
         while True:
             self.clock.tick(FPS)  # 控制幀率
 
