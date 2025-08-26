@@ -226,27 +226,38 @@ paddle_color = (200, 200, 200)
 
 
 def init_game():
-    """初始化或重置遊戲物件，回傳 (bricks, paddle, ball, ball_speed)"""
+    """初始化或重置遊戲物件，回傳 (bricks, paddle, balls, ball_speed)"""
     paddle = Brick(paddle_width, paddle_height, paddle_x, paddle_y, paddle_color)
-    # 建立球 (預設在底板上方，未發射)
+    # 建立球清單 (初始5顆球)
     ball_radius = 8
     ball_color = (255, 255, 0)  # 黃色球
-    ball = Ball(
-        ball_radius,
-        ball_color,
-        paddle.x + paddle.width / 2,
-        paddle.y - ball_radius - 1,
-        launched=False,
-    )
+    balls = []
+    for i in range(5):  # 初始5顆球
+        ball = Ball(
+            ball_radius,
+            ball_color,
+            paddle.x + paddle.width / 2,
+            paddle.y - ball_radius - 1,
+            launched=False,
+        )
+        balls.append(ball)
     ball_speed = 10  # 使用者要求的速度
     bricks = create_bricks()
     # 初始化分數
     score = 0
-    return bricks, paddle, ball, ball_speed, score
+    # 球總數統計
+    total_balls = 5
+    # 計時器變數
+    last_add_time = pygame.time.get_ticks()
+    # 發射相關變數
+    balls_to_launch = 0
+    launch_timer = 0
+    launch_delay = 300  # 每顆球間隔300毫秒發射
+    return bricks, paddle, balls, ball_speed, score, total_balls, last_add_time, balls_to_launch, launch_timer, launch_delay
 
 
 # 初始化遊戲物件
-bricks, paddle, ball, ball_speed, score = init_game()
+bricks, paddle, balls, ball_speed, score, total_balls, last_add_time, balls_to_launch, launch_timer, launch_delay = init_game()
 
 # 建立顯示用字型
 default_font = pygame.font.SysFont(None, 28)
@@ -266,14 +277,15 @@ while True:
             sys.exit()  # 離開遊戲
         # 發射球：空白鍵或滑鼠左鍵
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and not ball.launched:
-                # 初始速度向上與任一水平位移
-                ball.launched = True
-                ball.set_velocity(ball_speed * 0.5, -ball_speed)
+            if event.key == pygame.K_SPACE and balls_to_launch == 0:
+                # 準備發射5顆球
+                balls_to_launch = min(5, len([b for b in balls if not b.launched]))
+                launch_timer = pygame.time.get_ticks()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1 and not ball.launched:
-                ball.launched = True
-                ball.set_velocity(ball_speed * 0.5, -ball_speed)
+            if event.button == 1 and balls_to_launch == 0:
+                # 準備發射5顆球
+                balls_to_launch = min(5, len([b for b in balls if not b.launched]))
+                launch_timer = pygame.time.get_ticks()
 
     # 填充背景顏色
     screen.fill((0, 0, 0))  # 黑色背景
