@@ -11,7 +11,7 @@ import pygame
 
 class Brick:
     """簡單的磚塊物件.
-    
+
     Attributes:
         width (int): 寬度
         height (int): 高度
@@ -23,7 +23,7 @@ class Brick:
 
     def __init__(self, width, height, x, y, color, hit=False):
         """初始化磚塊.
-        
+
         Args:
             width (int): 磚塊寬度
             height (int): 磚塊高度
@@ -41,10 +41,10 @@ class Brick:
 
     def draw(self, surface, x=None, y=None):
         """在指定的 surface 上繪製磚塊.
-        
+
         可選的 x, y 參數會暫時覆蓋磚塊本身的座標來繪製。
         只有當 self.hit == False 時才會繪製（被打到的磚塊不顯示）。
-        
+
         Args:
             surface: pygame surface 物件
             x (int, optional): 暫時的 x 座標
@@ -61,7 +61,7 @@ class Brick:
 
 class Ball:
     """球物件.
-    
+
     Attributes:
         radius (int): 半徑
         color (tuple): RGB 顏色值
@@ -74,7 +74,7 @@ class Ball:
 
     def __init__(self, radius, color, x, y, launched=False):
         """初始化球物件.
-        
+
         Args:
             radius (int): 球的半徑
             color (tuple): RGB 顏色值
@@ -92,13 +92,11 @@ class Ball:
 
     def draw(self, surface):
         """繪製球."""
-        pygame.draw.circle(
-            surface, self.color, (int(self.x), int(self.y)), self.radius
-        )
+        pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.radius)
 
     def set_velocity(self, vx, vy):
         """設定球的速度.
-        
+
         Args:
             vx (float): x 方向速度
             vy (float): y 方向速度
@@ -114,7 +112,7 @@ class Ball:
 
     def move_with_paddle(self, paddle):
         """將球置於底板上方中央（未發射時）.
-        
+
         Args:
             paddle: 底板物件
         """
@@ -123,11 +121,11 @@ class Ball:
 
     def check_wall_collision(self, width, height):
         """檢查與視窗邊界的碰撞.
-        
+
         Args:
             width (int): 視窗寬度
             height (int): 視窗高度
-            
+
         Returns:
             bool: 是否發生碰撞
         """
@@ -150,14 +148,14 @@ class Ball:
 
     def check_brick_collision(self, bricks):
         """檢查與磚塊的碰撞.
-        
+
         簡單的 AABB 與圓形碰撞近似：檢查球中心點是否落入磚塊區域擴張 radius 的範圍。
         現在此方法會回傳一個被命中的磚塊清單（可能為空、1 或 2 個）。有 10% 機率
         同一次命中另外一個最近的未被擊中的磚塊。
-        
+
         Args:
             bricks (list): 磚塊清單
-            
+
         Returns:
             list: 被命中的磚塊清單
         """
@@ -204,8 +202,9 @@ class Ball:
                             continue
                         other_x = other.x + other.width / 2
                         other_y = other.y + other.height / 2
-                        dist_sq = ((other_x - brick_center_x) ** 2 + 
-                                 (other_y - brick_center_y) ** 2)
+                        dist_sq = (other_x - brick_center_x) ** 2 + (
+                            other_y - brick_center_y
+                        ) ** 2
                         if nearest_other is None or dist_sq < nearest_dist_sq:
                             nearest_other = other
                             nearest_dist_sq = dist_sq
@@ -219,12 +218,12 @@ class Ball:
 
     def check_paddle_collision(self, paddle):
         """檢查與底板的碰撞.
-        
+
         簡單碰撞處理：若球從上方接觸到底板，則反轉 vy 並根據接觸位置調整 vx。
-        
+
         Args:
             paddle: 底板物件
-            
+
         Returns:
             bool: 是否發生碰撞
         """
@@ -232,24 +231,25 @@ class Ball:
         left = paddle.x
         right = paddle.x + paddle.width
         top = paddle.y
-        if ((self.x + self.radius >= left) and 
-            (self.x - self.radius <= right) and 
-            (self.y + self.radius >= top) and 
-            (self.y - self.radius <= top + paddle.height)):
+        if (
+            (self.x + self.radius >= left)
+            and (self.x - self.radius <= right)
+            and (self.y + self.radius >= top)
+            and (self.y - self.radius <= top + paddle.height)
+        ):
             # 只在球向下移動時處理碰撞
             if self.vy > 0:
                 self.y = top - self.radius - 1
                 self.vy = -abs(self.vy)
                 # 根據碰撞位置調整水平速度，讓玩家能控制反彈角度
-                offset = ((self.x - (paddle.x + paddle.width / 2)) / 
-                         (paddle.width / 2))
+                offset = (self.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2)
                 self.vx += offset * 2  # 可調整的影響因子
                 return True
         return False
 
     def reset(self, x, y):
         """重置球到指定位置並設為未發射.
-        
+
         Args:
             x (float): 新的 x 座標
             y (float): 新的 y 座標
@@ -263,13 +263,13 @@ class Ball:
 
 class Explosion:
     """爆炸效果類別.
-    
+
     當磚塊被打中時創建的粒子爆炸效果。
     """
 
     def __init__(self, x, y, color, particle_count=15):
         """初始化爆炸效果.
-        
+
         Args:
             x (float): 爆炸中心 x 座標
             y (float): 爆炸中心 y 座標
@@ -301,10 +301,10 @@ class Explosion:
 
     def _vary_color(self, base_color):
         """基於基礎顏色創建變化顏色.
-        
+
         Args:
             base_color (tuple): 基礎 RGB 顏色值
-            
+
         Returns:
             tuple: 變化後的 RGB 顏色值
         """
@@ -341,7 +341,7 @@ class Explosion:
 
     def draw(self, surface):
         """繪製爆炸效果.
-        
+
         Args:
             surface: pygame surface 物件
         """
@@ -363,13 +363,12 @@ class Explosion:
 
                     # 繪製到主surface
                     surface.blit(
-                        particle_surface, 
-                        (particle["x"] - size, particle["y"] - size)
+                        particle_surface, (particle["x"] - size, particle["y"] - size)
                     )
 
     def is_finished(self):
         """檢查爆炸是否已結束.
-        
+
         Returns:
             bool: 爆炸是否已結束
         """

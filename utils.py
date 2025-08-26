@@ -11,12 +11,11 @@ from game_objects import Ball, Brick
 
 def create_bricks():
     """建立並回傳磚塊清單.
-    
+
     Returns:
         list: 磚塊物件清單
     """
-    total_bricks_width = (BRICK_COLS * BRICK_WIDTH + 
-                         (BRICK_COLS - 1) * BRICK_PADDING)
+    total_bricks_width = BRICK_COLS * BRICK_WIDTH + (BRICK_COLS - 1) * BRICK_PADDING
     brick_offset_x = (WINDOW_WIDTH - total_bricks_width) // 2
     bricks = []
 
@@ -37,7 +36,7 @@ def create_bricks():
 
 def create_paddle():
     """建立並回傳底板物件.
-    
+
     Returns:
         Brick: 底板物件
     """
@@ -47,10 +46,10 @@ def create_paddle():
 
 def create_initial_balls(paddle):
     """建立初始球群.
-    
+
     Args:
         paddle: 底板物件
-        
+
     Returns:
         list: 初始球物件清單
     """
@@ -69,10 +68,10 @@ def create_initial_balls(paddle):
 
 def init_game():
     """初始化或重置遊戲物件，回傳所有遊戲狀態.
-    
+
     Returns:
         tuple: 包含所有遊戲狀態的元組
-            (bricks, paddle, balls, score, total_balls, 
+            (bricks, paddle, balls, score, total_balls,
              last_add_time, balls_to_launch, launch_timer)
     """
     paddle = create_paddle()
@@ -100,12 +99,12 @@ def init_game():
 
 def show_end_screen(screen, message, final_score):
     """顯示遊戲結束畫面.
-    
+
     Args:
         screen: pygame 畫面物件
         message (str): 結束訊息
         final_score (int): 最終分數
-        
+
     Returns:
         str: 使用者選擇 ('restart' 或 'quit')
     """
@@ -136,9 +135,7 @@ def show_end_screen(screen, message, final_score):
 
         # 主要訊息
         text = font.render(message, True, WHITE)
-        rect = text.get_rect(
-            center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60)
-        )
+        rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60))
         screen.blit(text, rect)
 
         # 顯示分數
@@ -154,9 +151,7 @@ def show_end_screen(screen, message, final_score):
             True,
             GRAY,
         )
-        tip_rect = tip.get_rect(
-            center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 30)
-        )
+        tip_rect = tip.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 30))
         screen.blit(tip, tip_rect)
 
         pygame.display.update()
@@ -164,10 +159,10 @@ def show_end_screen(screen, message, final_score):
 
 def update_paddle_position(paddle, keys, mouse_pos):
     """更新底板位置.
-    
+
     支援鍵盤左右控制（左右方向鍵或 A/D），若有按鍵則以鍵盤為主；
     否則以滑鼠為備援。
-    
+
     Args:
         paddle: 底板物件
         keys: pygame 按鍵狀態

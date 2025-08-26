@@ -109,7 +109,7 @@ class BrickBreakerGame:
 
     def _launch_next_ball(self, current_time):
         """發射下一顆球.
-        
+
         Args:
             current_time (int): 目前時間戳記
         """
@@ -117,9 +117,7 @@ class BrickBreakerGame:
             if not ball.launched:
                 ball.launched = True
                 # 添加一些隨機性讓球不會完全重疊
-                ball.set_velocity(
-                    BALL_SPEED * 0.5 + random.uniform(-1, 1), -BALL_SPEED
-                )
+                ball.set_velocity(BALL_SPEED * 0.5 + random.uniform(-1, 1), -BALL_SPEED)
                 self.balls_to_launch -= 1
                 self.launch_timer = current_time
                 break
@@ -144,9 +142,7 @@ class BrickBreakerGame:
                         # 創建爆炸效果在磚塊中心位置
                         explosion_x = hit_brick.x + hit_brick.width / 2
                         explosion_y = hit_brick.y + hit_brick.height / 2
-                        explosion = Explosion(
-                            explosion_x, explosion_y, hit_brick.color
-                        )
+                        explosion = Explosion(explosion_x, explosion_y, hit_brick.color)
                         self.explosions.append(explosion)
                 # 檢查與底板碰撞
                 ball.check_paddle_collision(self.paddle)
@@ -174,10 +170,10 @@ class BrickBreakerGame:
 
     def _is_ball_out_of_bounds(self, ball):
         """檢查球是否離開視窗範圍.
-        
+
         Args:
             ball: 球物件
-            
+
         Returns:
             bool: 球是否離開視窗範圍
         """
@@ -227,9 +223,7 @@ class BrickBreakerGame:
             explosion.draw(self.screen)
 
         # 繪製分數和球數於左上角
-        score_surface = self.default_font.render(
-            f"Score: {self.score}", True, WHITE
-        )
+        score_surface = self.default_font.render(f"Score: {self.score}", True, WHITE)
         self.screen.blit(score_surface, (10, 10))
 
         ball_count_surface = self.default_font.render(
