@@ -6,7 +6,7 @@
 import pygame
 import sys
 import random
-from game_objects import Ball
+from game_objects import Ball, Explosion
 from config import *
 from utils import *
 
@@ -47,6 +47,9 @@ class BrickBreakerGame:
             self.balls_to_launch,
             self.launch_timer,
         ) = init_game()
+
+        # 初始化爆炸效果列表
+        self.explosions = []
 
     def handle_events(self):
         """處理遊戲事件"""
@@ -100,6 +103,9 @@ class BrickBreakerGame:
         # 處理所有球的邏輯
         self._update_balls()
 
+        # 更新爆炸效果
+        self._update_explosions()
+
     def _launch_next_ball(self, current_time):
         """發射下一顆球"""
         for ball in self.balls:
@@ -123,9 +129,15 @@ class BrickBreakerGame:
                 ball.update()
                 # 檢查與視窗牆壁碰撞
                 ball.check_wall_collision(WINDOW_WIDTH, WINDOW_HEIGHT)
-                # 檢查與磚塊碰撞，若有命中則加分
-                if ball.check_brick_collision(self.bricks):
+                # 檢查與磚塊碰撞，若有命中則加分並創建爆炸效果
+                hit_brick = ball.check_brick_collision(self.bricks)
+                if hit_brick:
                     self.score += SCORE_PER_BRICK
+                    # 創建爆炸效果在磚塊中心位置
+                    explosion_x = hit_brick.x + hit_brick.width / 2
+                    explosion_y = hit_brick.y + hit_brick.height / 2
+                    explosion = Explosion(explosion_x, explosion_y, hit_brick.color)
+                    self.explosions.append(explosion)
                 # 檢查與底板碰撞
                 ball.check_paddle_collision(self.paddle)
 
@@ -136,6 +148,19 @@ class BrickBreakerGame:
         # 移除離開視窗的球
         for i in reversed(balls_to_remove):
             self.balls.pop(i)
+
+    def _update_explosions(self):
+        """更新爆炸效果"""
+        explosions_to_remove = []
+
+        for i, explosion in enumerate(self.explosions):
+            explosion.update()
+            if explosion.is_finished():
+                explosions_to_remove.append(i)
+
+        # 移除已結束的爆炸效果
+        for i in reversed(explosions_to_remove):
+            self.explosions.pop(i)
 
     def _is_ball_out_of_bounds(self, ball):
         """檢查球是否離開視窗範圍"""
@@ -179,6 +204,10 @@ class BrickBreakerGame:
         # 繪製所有球
         for ball in self.balls:
             ball.draw(self.screen)
+
+        # 繪製爆炸效果
+        for explosion in self.explosions:
+            explosion.draw(self.screen)
 
         # 繪製分數和球數於左上角
         score_surface = self.default_font.render(f"Score: {self.score}", True, WHITE)

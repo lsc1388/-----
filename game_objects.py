@@ -1,10 +1,11 @@
 """
 遊戲物件模組
-包含遊戲中的所有物件類別：Brick（磚塊）和 Ball（球）
+包含遊戲中的所有物件類別：Brick（磚塊）、Ball（球）和 Explosion（爆炸效果）
 """
 
 import pygame
 import random
+import math
 
 
 class Brick:
@@ -113,6 +114,7 @@ class Ball:
         """檢查與磚塊的碰撞
 
         簡單的 AABB 與圓形碰撞近似：檢查球中心點是否落入磚塊區域擴張 radius 的範圍
+        返回被撞擊的磚塊，以便創建爆炸效果
         """
         for b in bricks:
             if b.hit:
@@ -137,8 +139,8 @@ class Ball:
                     self.vx = -self.vx
                 else:
                     self.vy = -self.vy
-                return True
-        return False
+                return b  # 返回被撞擊的磚塊
+        return None
 
     def check_paddle_collision(self, paddle):
         """檢查與底板的碰撞
@@ -172,3 +174,102 @@ class Ball:
         self.vx = 0
         self.vy = 0
         self.launched = False
+
+
+class Explosion:
+    """爆炸效果類別
+
+    當磚塊被打中時創建的粒子爆炸效果
+    """
+
+    def __init__(self, x, y, color, particle_count=15):
+        """初始化爆炸效果
+
+        Args:
+            x, y: 爆炸中心座標
+            color: 爆炸顏色（基於磚塊顏色）
+            particle_count: 粒子數量
+        """
+        self.x = x
+        self.y = y
+        self.particles = []
+        self.creation_time = pygame.time.get_ticks()
+        self.duration = 800  # 爆炸持續時間（毫秒）
+
+        # 創建粒子
+        for _ in range(particle_count):
+            # 隨機角度和速度
+            angle = random.uniform(0, 2 * math.pi)
+            speed = random.uniform(2, 8)
+
+            particle = {
+                "x": x,
+                "y": y,
+                "vx": math.cos(angle) * speed,
+                "vy": math.sin(angle) * speed,
+                "size": random.uniform(2, 6),
+                "color": self._vary_color(color),
+                "life": 1.0,  # 生命值從1.0開始，逐漸減少到0
+            }
+            self.particles.append(particle)
+
+    def _vary_color(self, base_color):
+        """基於基礎顏色創建變化顏色"""
+        r, g, b = base_color
+        # 添加一些隨機變化，但保持在有效範圍內
+        r = max(0, min(255, r + random.randint(-50, 50)))
+        g = max(0, min(255, g + random.randint(-50, 50)))
+        b = max(0, min(255, b + random.randint(-50, 50)))
+        return (r, g, b)
+
+    def update(self):
+        """更新爆炸效果"""
+        current_time = pygame.time.get_ticks()
+        elapsed = current_time - self.creation_time
+
+        # 計算生命值比例
+        life_ratio = max(0, 1 - elapsed / self.duration)
+
+        # 更新每個粒子
+        for particle in self.particles:
+            # 更新位置
+            particle["x"] += particle["vx"]
+            particle["y"] += particle["vy"]
+
+            # 添加重力效果
+            particle["vy"] += 0.2
+
+            # 更新生命值
+            particle["life"] = life_ratio
+
+            # 添加阻力
+            particle["vx"] *= 0.98
+            particle["vy"] *= 0.98
+
+    def draw(self, surface):
+        """繪製爆炸效果"""
+        for particle in self.particles:
+            if particle["life"] > 0:
+                # 根據生命值調整透明度和大小
+                alpha = int(particle["life"] * 255)
+                size = int(particle["size"] * particle["life"])
+
+                if size > 0:
+                    # 創建帶透明度的surface
+                    particle_surface = pygame.Surface(
+                        (size * 2, size * 2), pygame.SRCALPHA
+                    )
+                    color_with_alpha = (*particle["color"], alpha)
+                    pygame.draw.circle(
+                        particle_surface, color_with_alpha, (size, size), size
+                    )
+
+                    # 繪製到主surface
+                    surface.blit(
+                        particle_surface, (particle["x"] - size, particle["y"] - size)
+                    )
+
+    def is_finished(self):
+        """檢查爆炸是否已結束"""
+        current_time = pygame.time.get_ticks()
+        return current_time - self.creation_time >= self.duration
